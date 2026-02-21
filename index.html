@@ -641,6 +641,77 @@
             color: var(--text);
         }
 
+        /* ── Inline quick-add type row ─────────────── */
+        .quick-add-type {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            animation: fadein .15s ease;
+        }
+
+        .quick-add-type.visible {
+            display: flex;
+        }
+
+        @keyframes fadein {
+            from {
+                opacity: 0;
+                transform: translateY(-4px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .quick-add-type .emoji-q {
+            width: 58px;
+            text-align: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .quick-add-type .name-q {
+            flex: 1;
+        }
+
+        .quick-add-type .btn-ok {
+            flex-shrink: 0;
+            padding: 9px 14px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Heebo', sans-serif;
+            font-size: .85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity .2s;
+        }
+
+        .quick-add-type .btn-ok:hover {
+            opacity: .85;
+        }
+
+        .quick-add-type .btn-x {
+            flex-shrink: 0;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted);
+            font-size: .85rem;
+            padding: 9px 10px;
+            cursor: pointer;
+            transition: color .2s, border-color .2s;
+        }
+
+        .quick-add-type .btn-x:hover {
+            color: var(--red);
+            border-color: var(--red);
+        }
+
         /* ── Toast ───────────────────────────────────── */
         #toast {
             position: fixed;
@@ -682,7 +753,14 @@
             </div>
             <div>
                 <label for="doc-type">סוג</label>
-                <select id="doc-type"></select>
+                <select id="doc-type" onchange="onTypeChange(this,'quick-add-main')"></select>
+                <div class="quick-add-type" id="quick-add-main">
+                    <input class="emoji-q" type="text" id="qa-main-icon" placeholder="😀" maxlength="4" />
+                    <input class="name-q" type="text" id="qa-main-name" placeholder="שם הסוג החדש..." maxlength="30" />
+                    <button class="btn-ok"
+                        onclick="confirmQuickType('doc-type','quick-add-main','qa-main-icon','qa-main-name')">הוסף</button>
+                    <button class="btn-x" onclick="cancelQuickType('doc-type','quick-add-main')">✕</button>
+                </div>
             </div>
             <div>
                 <label for="doc-date">תאריך פקיעה</label>
@@ -738,7 +816,14 @@
             </div>
             <div class="field">
                 <label for="edit-type">סוג</label>
-                <select id="edit-type"></select>
+                <select id="edit-type" onchange="onTypeChange(this,'quick-add-edit')"></select>
+                <div class="quick-add-type" id="quick-add-edit">
+                    <input class="emoji-q" type="text" id="qa-edit-icon" placeholder="😀" maxlength="4" />
+                    <input class="name-q" type="text" id="qa-edit-name" placeholder="שם הסוג החדש..." maxlength="30" />
+                    <button class="btn-ok"
+                        onclick="confirmQuickType('edit-type','quick-add-edit','qa-edit-icon','qa-edit-name')">הוסף</button>
+                    <button class="btn-x" onclick="cancelQuickType('edit-type','quick-add-edit')">✕</button>
+                </div>
             </div>
             <div class="field">
                 <label for="edit-date">תאריך פקיעה</label>
@@ -818,13 +903,59 @@
         }
 
         /* ── Populate <select> elements ───────────────── */
+        const ADD_SENTINEL = '__add__';
         function populateTypeSelects(selectedName = '') {
             const types = allTypes();
-            const html = types.map(t =>
+            const opts = types.map(t =>
                 `<option value="${esc(t.name)}" ${t.name === selectedName ? 'selected' : ''}>${t.icon} ${esc(t.name)}</option>`
             ).join('');
-            document.getElementById('doc-type').innerHTML = html;
-            document.getElementById('edit-type').innerHTML = html;
+            const addOpt = `<option value="${ADD_SENTINEL}" style="color:var(--accent2);font-style:italic">✚ הוסף סוג...</option>`;
+            ['doc-type', 'edit-type'].forEach(id => {
+                document.getElementById(id).innerHTML = opts + addOpt;
+            });
+        }
+
+        /* ── Inline quick-add handlers ────────────────── */
+        function onTypeChange(sel, panelId) {
+            const panel = document.getElementById(panelId);
+            if (sel.value === ADD_SENTINEL) {
+                panel.classList.add('visible');
+                // focus the name input
+                panel.querySelector('.name-q').focus();
+            } else {
+                panel.classList.remove('visible');
+            }
+        }
+
+        function confirmQuickType(selId, panelId, iconInputId, nameInputId) {
+            const icon = document.getElementById(iconInputId).value.trim() || '📄';
+            const name = document.getElementById(nameInputId).value.trim();
+            if (!name) { showToast('⚠️ נא לרשום שם לסוג'); return; }
+            if (allTypes().some(t => t.name === name)) { showToast('⚠️ סוג כזה כבר קיים'); return; }
+
+            const customTypes = loadCustomTypes();
+            customTypes.push({ name, icon });
+            saveCustomTypes(customTypes);
+
+            // remember which select triggered this so we can pre-select the new type
+            const targetSel = selId;
+            populateTypeSelects(name);   // re-build both selects, new type selected
+            renderTypeChips();
+
+            // clear inputs and hide panel
+            document.getElementById(iconInputId).value = '';
+            document.getElementById(nameInputId).value = '';
+            document.getElementById(panelId).classList.remove('visible');
+
+            showToast(`✅ הסוג "${name}" נוסף ונבחר`);
+        }
+
+        function cancelQuickType(selId, panelId) {
+            // revert select to first real option
+            const sel = document.getElementById(selId);
+            const firstReal = [...sel.options].find(o => o.value !== ADD_SENTINEL);
+            if (firstReal) sel.value = firstReal.value;
+            document.getElementById(panelId).classList.remove('visible');
         }
 
         /* ── Type chips ───────────────────────────────── */
