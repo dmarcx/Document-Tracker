@@ -1,521 +1,1007 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>מעקב מסמכים</title>
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    /* ── Reset & Tokens ────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>מעקב מסמכים</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <style>
+        /* ── Reset & Tokens ─────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    :root {
-      --bg:       #0f1117;
-      --surface:  #1a1d27;
-      --card:     #22263a;
-      --border:   #2e3352;
-      --accent:   #6c63ff;
-      --accent2:  #a78bfa;
-      --text:     #e8eaf6;
-      --muted:    #7b82a8;
-      --red:      #ff4d6d;
-      --orange:   #fb923c;
-      --green:    #4ade80;
-      --red-bg:   rgba(255, 77, 109,  0.12);
-      --orange-bg:rgba(251, 146, 60,  0.12);
-      --green-bg: rgba(74, 222, 128,  0.12);
-      --radius:   14px;
-      --shadow:   0 8px 32px rgba(0,0,0,0.4);
-    }
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --card: #22263a;
+            --border: #2e3352;
+            --accent: #6c63ff;
+            --accent2: #a78bfa;
+            --text: #e8eaf6;
+            --muted: #7b82a8;
+            --red: #ff4d6d;
+            --orange: #fb923c;
+            --green: #4ade80;
+            --red-bg: rgba(255, 77, 109, 0.12);
+            --orange-bg: rgba(251, 146, 60, 0.12);
+            --green-bg: rgba(74, 222, 128, 0.12);
+            --radius: 14px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, .4);
+        }
 
-    body {
-      font-family: 'Heebo', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 24px 16px 60px;
-      background-image:
-        radial-gradient(ellipse at 20% 20%, rgba(108,99,255,.18) 0%, transparent 55%),
-        radial-gradient(ellipse at 80% 80%, rgba(167,139,250,.12) 0%, transparent 55%);
-    }
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px 16px 80px;
+            background-image:
+                radial-gradient(ellipse at 20% 20%, rgba(108, 99, 255, .18) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 80%, rgba(167, 139, 250, .12) 0%, transparent 55%);
+        }
 
-    /* ── Header ──────────────────────────────────────── */
-    header {
-      max-width: 720px;
-      margin: 0 auto 36px;
-      text-align: center;
-    }
-    header h1 {
-      font-size: clamp(1.8rem, 5vw, 2.8rem);
-      font-weight: 800;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.5px;
-      margin-bottom: 6px;
-    }
-    header p {
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
+        /* ── Header ─────────────────────────────────── */
+        header {
+            max-width: 720px;
+            margin: 0 auto 36px;
+            text-align: center;
+        }
 
-    /* ── Add-form card ───────────────────────────────── */
-    .form-card {
-      max-width: 720px;
-      margin: 0 auto 32px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px 24px;
-      box-shadow: var(--shadow);
-    }
-    .form-card h2 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .form-card h2::before { content: '➕'; font-size: 1rem; }
+        header h1 {
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -.5px;
+            margin-bottom: 6px;
+        }
 
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-    @media (max-width: 540px) { .form-row { grid-template-columns: 1fr; } }
+        header p {
+            color: var(--muted);
+            font-size: .95rem;
+        }
 
-    label {
-      display: block;
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--muted);
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    input, select {
-      width: 100%;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      font-family: 'Heebo', sans-serif;
-      font-size: 0.95rem;
-      padding: 10px 13px;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      direction: rtl;
-    }
-    input:focus, select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(108,99,255,.2);
-    }
-    select option { background: var(--card); }
+        /* ── Cards / Forms ───────────────────────────── */
+        .form-card {
+            max-width: 720px;
+            margin: 0 auto 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 22px;
+            box-shadow: var(--shadow);
+        }
 
-    /* Date input — fix calendar icon colour in dark mode */
-    input[type="date"]::-webkit-calendar-picker-indicator {
-      filter: invert(0.8);
-      cursor: pointer;
-    }
+        .form-card h2 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .btn-add {
-      width: 100%;
-      padding: 12px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border: none;
-      border-radius: 10px;
-      color: #fff;
-      font-family: 'Heebo', sans-serif;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      letter-spacing: 0.3px;
-      transition: opacity 0.2s, transform 0.1s;
-    }
-    .btn-add:hover  { opacity: 0.9; }
-    .btn-add:active { transform: scale(0.98); }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
 
-    /* ── Stats bar ───────────────────────────────────── */
-    .stats {
-      max-width: 720px;
-      margin: 0 auto 24px;
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .stat-chip {
-      flex: 1;
-      min-width: 140px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 16px;
-      text-align: center;
-    }
-    .stat-chip .num { font-size: 1.6rem; font-weight: 800; }
-    .stat-chip .lbl { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
-    .stat-chip.red    { border-color: var(--red);    background: var(--red-bg); }
-    .stat-chip.orange { border-color: var(--orange); background: var(--orange-bg); }
-    .stat-chip.green  { border-color: var(--green);  background: var(--green-bg); }
-    .stat-chip.red    .num { color: var(--red); }
-    .stat-chip.orange .num { color: var(--orange); }
-    .stat-chip.green  .num { color: var(--green); }
+        @media(max-width:540px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
 
-    /* ── Document list ───────────────────────────────── */
-    .list-header {
-      max-width: 720px;
-      margin: 0 auto 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .list-header h2 { font-size: 1.05rem; font-weight: 600; }
-    .list-header .count {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 3px 12px;
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
+        label {
+            display: block;
+            font-size: .76rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
 
-    .doc-list {
-      max-width: 720px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+        input,
+        select {
+            width: 100%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'Heebo', sans-serif;
+            font-size: .95rem;
+            padding: 10px 13px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+            direction: rtl;
+        }
 
-    /* ── Document card ───────────────────────────────── */
-    .doc-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px 20px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      transition: transform 0.15s, box-shadow 0.15s;
-      animation: slideIn 0.25s ease;
-    }
-    .doc-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+        input:focus,
+        select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, .2);
+        }
 
-    /* Left accent strip */
-    .doc-card::before {
-      content: '';
-      display: block;
-      width: 4px;
-      min-height: 52px;
-      border-radius: 4px;
-      flex-shrink: 0;
-    }
-    .doc-card.red    { border-color: var(--red);    background: var(--red-bg); }
-    .doc-card.orange { border-color: var(--orange); background: var(--orange-bg); }
-    .doc-card.green  { border-color: var(--green);  background: var(--green-bg); }
-    .doc-card.red    ::before { background: var(--red); }
-    .doc-card.orange ::before { background: var(--orange); }
-    .doc-card.green  ::before { background: var(--green); }
+        select option {
+            background: var(--card);
+        }
 
-    .doc-card .icon {
-      font-size: 2rem;
-      flex-shrink: 0;
-      width: 44px;
-      text-align: center;
-    }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(.8);
+            cursor: pointer;
+        }
 
-    .doc-info { flex: 1; min-width: 0; }
-    .doc-info .name {
-      font-size: 1.05rem;
-      font-weight: 700;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .doc-info .meta {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 5px;
-      flex-wrap: wrap;
-    }
-    .doc-info .type-badge {
-      background: rgba(255,255,255,.07);
-      border-radius: 6px;
-      padding: 2px 9px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--muted);
-    }
-    .doc-info .date-str { font-size: 0.82rem; color: var(--muted); }
+        /* ── Buttons ─────────────────────────────────── */
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Heebo', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity .2s, transform .1s;
+        }
 
-    .doc-card .urgency {
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-align: center;
-      flex-shrink: 0;
-      min-width: 80px;
-    }
-    .doc-card.red    .urgency { color: var(--red); }
-    .doc-card.orange .urgency { color: var(--orange); }
-    .doc-card.green  .urgency { color: var(--green); }
+        .btn-primary:hover {
+            opacity: .9;
+        }
 
-    .btn-delete {
-      background: none;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      color: var(--muted);
-      cursor: pointer;
-      font-size: 1.1rem;
-      padding: 6px 8px;
-      transition: color 0.2s, border-color 0.2s, background 0.2s;
-      flex-shrink: 0;
-    }
-    .btn-delete:hover {
-      color: var(--red);
-      border-color: var(--red);
-      background: rgba(255,77,109,.08);
-    }
+        .btn-primary:active {
+            transform: scale(.98);
+        }
 
-    /* ── Empty state ─────────────────────────────────── */
-    .empty {
-      max-width: 720px;
-      margin: 0 auto;
-      text-align: center;
-      padding: 64px 0;
-      color: var(--muted);
-    }
-    .empty .emoji { font-size: 3.5rem; margin-bottom: 14px; }
-    .empty p { font-size: 1rem; }
+        .btn-ghost {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted);
+            font-family: 'Heebo', sans-serif;
+            font-size: .85rem;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: border-color .2s, color .2s;
+        }
 
-    /* ── Toast ───────────────────────────────────────── */
-    #toast {
-      position: fixed;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: var(--accent);
-      color: #fff;
-      padding: 12px 24px;
-      border-radius: 30px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      box-shadow: 0 6px 24px rgba(108,99,255,.5);
-      transition: transform 0.3s cubic-bezier(.4,0,.2,1);
-      z-index: 999;
-      white-space: nowrap;
-    }
-    #toast.show { transform: translateX(-50%) translateY(0); }
-  </style>
+        .btn-ghost:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ── Custom-type row ─────────────────────────── */
+        .type-manager {
+            max-width: 720px;
+            margin: 0 auto 28px;
+        }
+
+        /* toggle link */
+        .type-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            color: var(--muted);
+            font-size: .82rem;
+            font-weight: 600;
+            user-select: none;
+            width: fit-content;
+            margin: 0 auto 0;
+            transition: color .2s;
+        }
+
+        .type-toggle:hover {
+            color: var(--accent2);
+        }
+
+        .type-toggle .arrow {
+            transition: transform .25s;
+            display: inline-block;
+        }
+
+        .type-toggle.open .arrow {
+            transform: rotate(180deg);
+        }
+
+        .type-panel {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height .3s ease, opacity .3s;
+            opacity: 0;
+        }
+
+        .type-panel.open {
+            max-height: 300px;
+            opacity: 1;
+        }
+
+        .type-panel-inner {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            margin-top: 10px;
+        }
+
+        .type-panel-inner h3 {
+            font-size: .9rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: var(--accent2);
+        }
+
+        .type-add-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .type-add-row input {
+            flex: 1;
+        }
+
+        .type-add-row .emoji-input {
+            max-width: 70px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        .type-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .type-chip {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: .8rem;
+            font-weight: 600;
+        }
+
+        .type-chip.builtin {
+            color: var(--muted);
+        }
+
+        .type-chip.custom {
+            border-color: var(--accent);
+            color: var(--accent2);
+        }
+
+        .type-chip .del-type {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: .85rem;
+            padding: 0 2px;
+            transition: color .15s;
+        }
+
+        .type-chip .del-type:hover {
+            color: var(--red);
+        }
+
+        /* ── Stats bar ───────────────────────────────── */
+        .stats {
+            max-width: 720px;
+            margin: 0 auto 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .stat-chip {
+            flex: 1;
+            min-width: 130px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            text-align: center;
+        }
+
+        .stat-chip .num {
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+
+        .stat-chip .lbl {
+            font-size: .75rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .stat-chip.red {
+            border-color: var(--red);
+            background: var(--red-bg);
+        }
+
+        .stat-chip.orange {
+            border-color: var(--orange);
+            background: var(--orange-bg);
+        }
+
+        .stat-chip.green {
+            border-color: var(--green);
+            background: var(--green-bg);
+        }
+
+        .stat-chip.red .num {
+            color: var(--red);
+        }
+
+        .stat-chip.orange .num {
+            color: var(--orange);
+        }
+
+        .stat-chip.green .num {
+            color: var(--green);
+        }
+
+        /* ── List header ─────────────────────────────── */
+        .list-header {
+            max-width: 720px;
+            margin: 0 auto 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .list-header h2 {
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        .list-header .count {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: .8rem;
+            color: var(--muted);
+        }
+
+        .doc-list {
+            max-width: 720px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* ── Document card ───────────────────────────── */
+        .doc-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: transform .15s, box-shadow .15s;
+            animation: slideIn .25s ease;
+        }
+
+        .doc-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .doc-card::before {
+            content: '';
+            display: block;
+            width: 4px;
+            min-height: 50px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .doc-card.red {
+            border-color: var(--red);
+            background: var(--red-bg);
+        }
+
+        .doc-card.orange {
+            border-color: var(--orange);
+            background: var(--orange-bg);
+        }
+
+        .doc-card.green {
+            border-color: var(--green);
+            background: var(--green-bg);
+        }
+
+        .doc-card.red ::before {
+            background: var(--red);
+        }
+
+        .doc-card.orange ::before {
+            background: var(--orange);
+        }
+
+        .doc-card.green ::before {
+            background: var(--green);
+        }
+
+        .doc-card .icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+            width: 40px;
+            text-align: center;
+        }
+
+        .doc-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .doc-info .name {
+            font-size: 1rem;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .doc-info .meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+
+        .doc-info .type-badge {
+            background: rgba(255, 255, 255, .07);
+            border-radius: 6px;
+            padding: 2px 9px;
+            font-size: .72rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .doc-info .date-str {
+            font-size: .82rem;
+            color: var(--muted);
+        }
+
+        .doc-card .urgency {
+            font-size: .78rem;
+            font-weight: 700;
+            text-align: center;
+            flex-shrink: 0;
+            min-width: 80px;
+        }
+
+        .doc-card.red .urgency {
+            color: var(--red);
+        }
+
+        .doc-card.orange .urgency {
+            color: var(--orange);
+        }
+
+        .doc-card.green .urgency {
+            color: var(--green);
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .btn-icon {
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 5px 7px;
+            transition: color .2s, border-color .2s, background .2s;
+        }
+
+        .btn-icon.edit:hover {
+            color: var(--accent2);
+            border-color: var(--accent2);
+            background: rgba(167, 139, 250, .08);
+        }
+
+        .btn-icon.del:hover {
+            color: var(--red);
+            border-color: var(--red);
+            background: rgba(255, 77, 109, .08);
+        }
+
+        /* ── Empty state ─────────────────────────────── */
+        .empty {
+            max-width: 720px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 64px 0;
+            color: var(--muted);
+        }
+
+        .empty .emoji {
+            font-size: 3.5rem;
+            margin-bottom: 14px;
+        }
+
+        /* ── Modal overlay ───────────────────────────── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .65);
+            backdrop-filter: blur(4px);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, .6);
+            animation: popIn .22s ease;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(.93);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal .field {
+            margin-bottom: 16px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .modal-actions .btn-primary {
+            flex: 1;
+        }
+
+        .btn-cancel {
+            flex: 0 0 auto;
+            padding: 12px 18px;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--muted);
+            font-family: 'Heebo', sans-serif;
+            font-size: .95rem;
+            cursor: pointer;
+            transition: border-color .2s, color .2s;
+        }
+
+        .btn-cancel:hover {
+            border-color: var(--muted);
+            color: var(--text);
+        }
+
+        /* ── Toast ───────────────────────────────────── */
+        #toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--accent);
+            color: #fff;
+            padding: 11px 22px;
+            border-radius: 30px;
+            font-size: .9rem;
+            font-weight: 600;
+            box-shadow: 0 6px 24px rgba(108, 99, 255, .5);
+            transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+            z-index: 999;
+            white-space: nowrap;
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
 </head>
+
 <body>
 
-<header>
-  <h1>📋 מעקב מסמכים</h1>
-  <p>עקוב אחר תוקף המסמכים שלך בקלות</p>
-</header>
+    <header>
+        <h1>📋 מעקב מסמכים</h1>
+        <p>עקוב אחר תוקף המסמכים שלך בקלות</p>
+    </header>
 
-<!-- Add Form -->
-<div class="form-card">
-  <h2>הוספת מסמך חדש</h2>
-  <div class="form-row">
-    <div>
-      <label for="doc-name">שם המסמך</label>
-      <input type="text" id="doc-name" placeholder='למשל: ביטוח רכב' maxlength="60" />
+    <!-- Add document form -->
+    <div class="form-card">
+        <h2>➕ הוספת מסמך חדש</h2>
+        <div class="form-row">
+            <div>
+                <label for="doc-name">שם המסמך</label>
+                <input type="text" id="doc-name" placeholder="למשל: ביטוח רכב" maxlength="60" />
+            </div>
+            <div>
+                <label for="doc-type">סוג</label>
+                <select id="doc-type"></select>
+            </div>
+            <div>
+                <label for="doc-date">תאריך פקיעה</label>
+                <input type="date" id="doc-date" />
+            </div>
+        </div>
+        <button class="btn-primary" onclick="addDocument()">הוסף מסמך</button>
     </div>
-    <div>
-      <label for="doc-type">סוג</label>
-      <select id="doc-type">
-        <option value="ביטוח">🛡️ ביטוח</option>
-        <option value="דרכון">🛂 דרכון</option>
-        <option value="פק&quot;מ">🏦 פק&quot;מ</option>
-        <option value="אחר">📄 אחר</option>
-      </select>
+
+    <!-- Type manager toggle -->
+    <div class="type-manager">
+        <div class="type-toggle" id="type-toggle" onclick="toggleTypePanel()">
+            <span>⚙️ ניהול סוגי מסמכים</span>
+            <span class="arrow">▾</span>
+        </div>
+        <div class="type-panel" id="type-panel">
+            <div class="type-panel-inner">
+                <h3>➕ הוסף סוג חדש</h3>
+                <div class="type-add-row">
+                    <input class="emoji-input" type="text" id="new-type-emoji" placeholder="😀" maxlength="4" />
+                    <input type="text" id="new-type-name" placeholder="שם הסוג..." maxlength="30" />
+                    <button class="btn-ghost" onclick="addCustomType()">הוסף</button>
+                </div>
+                <div class="type-chips" id="type-chips"></div>
+            </div>
+        </div>
     </div>
-    <div>
-      <label for="doc-date">תאריך פקיעה</label>
-      <input type="date" id="doc-date" />
+
+    <!-- Stats -->
+    <div class="stats" id="stats-bar"></div>
+
+    <!-- List header -->
+    <div class="list-header">
+        <h2>המסמכים שלי</h2>
+        <span class="count" id="doc-count">0 מסמכים</span>
     </div>
-  </div>
-  <button class="btn-add" onclick="addDocument()">הוסף מסמך</button>
-</div>
 
-<!-- Stats -->
-<div class="stats" id="stats-bar"></div>
+    <!-- Document cards -->
+    <div class="doc-list" id="doc-list"></div>
+    <div class="empty" id="empty-state" style="display:none">
+        <div class="emoji">🗂️</div>
+        <p>אין מסמכים עדיין — הוסף את המסמך הראשון שלך!</p>
+    </div>
 
-<!-- List header -->
-<div class="list-header">
-  <h2>המסמכים שלי</h2>
-  <span class="count" id="doc-count">0 מסמכים</span>
-</div>
+    <!-- Edit modal -->
+    <div class="modal-overlay" id="edit-modal" onclick="handleOverlayClick(event)">
+        <div class="modal">
+            <h2>✏️ עריכת מסמך</h2>
+            <input type="hidden" id="edit-id" />
+            <div class="field">
+                <label for="edit-name">שם המסמך</label>
+                <input type="text" id="edit-name" maxlength="60" />
+            </div>
+            <div class="field">
+                <label for="edit-type">סוג</label>
+                <select id="edit-type"></select>
+            </div>
+            <div class="field">
+                <label for="edit-date">תאריך פקיעה</label>
+                <input type="date" id="edit-date" />
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal()">ביטול</button>
+                <button class="btn-primary" onclick="saveEdit()">שמור שינויים</button>
+            </div>
+        </div>
+    </div>
 
-<!-- Document cards -->
-<div class="doc-list" id="doc-list"></div>
-<div class="empty" id="empty-state" style="display:none">
-  <div class="emoji">🗂️</div>
-  <p>אין מסמכים עדיין — הוסף את המסמך הראשון שלך!</p>
-</div>
+    <div id="toast"></div>
 
-<div id="toast"></div>
+    <script>
+        /* ── Constants ────────────────────────────────── */
+        const BUILTIN_TYPES = [
+            { name: 'ביטוח', icon: '🛡️' },
+            { name: 'דרכון', icon: '🛂' },
+            { name: 'פק"מ', icon: '🏦' },
+            { name: 'אחר', icon: '📄' },
+        ];
+        const MS_DAY = 86_400_000;
 
-<script>
-  /* ── Helpers ───────────────────────────────────────── */
-  const TYPE_ICONS = { 'ביטוח':'🛡️', 'דרכון':'🛂', 'פק"מ':'🏦', 'אחר':'📄' };
-  const MS_DAY = 86_400_000;
+        /* ── Storage helpers ──────────────────────────── */
+        function loadDocs() { try { return JSON.parse(localStorage.getItem('docs') || '[]'); } catch { return []; } }
+        function saveDocs(d) { localStorage.setItem('docs', JSON.stringify(d)); }
 
-  function daysUntil(dateStr) {
-    const exp = new Date(dateStr).setHours(0,0,0,0);
-    const now = new Date().setHours(0,0,0,0);
-    return Math.round((exp - now) / MS_DAY);
-  }
+        function loadCustomTypes() { try { return JSON.parse(localStorage.getItem('customTypes') || '[]'); } catch { return []; } }
+        function saveCustomTypes(t) { localStorage.setItem('customTypes', JSON.stringify(t)); }
 
-  function urgencyClass(days) {
-    if (days < 0)  return 'red';
-    if (days <= 30) return 'red';
-    if (days <= 60) return 'orange';
-    return 'green';
-  }
+        function allTypes() {
+            return [...BUILTIN_TYPES, ...loadCustomTypes()];
+        }
+        function iconFor(typeName) {
+            return (allTypes().find(t => t.name === typeName) || {}).icon || '📄';
+        }
 
-  function urgencyLabel(days) {
-    if (days < 0)   return `⚠️ פג לפני ${Math.abs(days)} ימים`;
-    if (days === 0) return '🔴 פג היום!';
-    if (days <= 30) return `🔴 ${days} ימים`;
-    if (days <= 60) return `🟠 ${days} ימים`;
-    return `🟢 ${days} ימים`;
-  }
+        /* ── Date helpers ─────────────────────────────── */
+        function daysUntil(dateStr) {
+            const exp = new Date(dateStr).setHours(0, 0, 0, 0);
+            const now = new Date().setHours(0, 0, 0, 0);
+            return Math.round((exp - now) / MS_DAY);
+        }
+        function urgencyClass(days) {
+            if (days <= 30) return 'red';
+            if (days <= 60) return 'orange';
+            return 'green';
+        }
+        function urgencyLabel(days) {
+            if (days < 0) return `⚠️ פג לפני ${Math.abs(days)} ימים`;
+            if (days === 0) return '🔴 פג היום!';
+            if (days <= 30) return `🔴 ${days} ימים`;
+            if (days <= 60) return `🟠 ${days} ימים`;
+            return `🟢 ${days} ימים`;
+        }
+        function formatDate(dateStr) {
+            const [y, m, d] = dateStr.split('-');
+            return `${d}/${m}/${y}`;
+        }
 
-  function formatDate(dateStr) {
-    const [y, m, d] = dateStr.split('-');
-    return `${d}/${m}/${y}`;
-  }
+        /* ── Escape ───────────────────────────────────── */
+        function esc(s) {
+            return String(s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
 
-  /* ── Storage ───────────────────────────────────────── */
-  function load() {
-    try { return JSON.parse(localStorage.getItem('docs') || '[]'); }
-    catch { return []; }
-  }
-  function save(docs) {
-    localStorage.setItem('docs', JSON.stringify(docs));
-  }
+        /* ── Toast ────────────────────────────────────── */
+        let toastTimer;
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
 
-  /* ── Toast ─────────────────────────────────────────── */
-  let toastTimer;
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
-  }
+        /* ── Populate <select> elements ───────────────── */
+        function populateTypeSelects(selectedName = '') {
+            const types = allTypes();
+            const html = types.map(t =>
+                `<option value="${esc(t.name)}" ${t.name === selectedName ? 'selected' : ''}>${t.icon} ${esc(t.name)}</option>`
+            ).join('');
+            document.getElementById('doc-type').innerHTML = html;
+            document.getElementById('edit-type').innerHTML = html;
+        }
 
-  /* ── Render ────────────────────────────────────────── */
-  function render() {
-    const docs = load();
-    const list = document.getElementById('doc-list');
-    const empty = document.getElementById('empty-state');
-    const countEl = document.getElementById('doc-count');
-    const statsEl = document.getElementById('stats-bar');
+        /* ── Type chips ───────────────────────────────── */
+        function renderTypeChips() {
+            const customTypes = loadCustomTypes();
+            const chipsEl = document.getElementById('type-chips');
+            const builtinChips = BUILTIN_TYPES.map(t =>
+                `<span class="type-chip builtin">${t.icon} ${esc(t.name)}</span>`
+            ).join('');
+            const customChips = customTypes.map(t =>
+                `<span class="type-chip custom">
+        ${esc(t.icon)} ${esc(t.name)}
+        <button class="del-type" title="מחק סוג" onclick="deleteCustomType('${esc(t.name)}')">✕</button>
+      </span>`
+            ).join('');
+            chipsEl.innerHTML = builtinChips + customChips;
+        }
 
-    list.innerHTML = '';
-    countEl.textContent = `${docs.length} מסמכים`;
+        /* ── Add custom type ──────────────────────────── */
+        function addCustomType() {
+            const icon = document.getElementById('new-type-emoji').value.trim() || '📄';
+            const name = document.getElementById('new-type-name').value.trim();
+            if (!name) { showToast('⚠️ נא לרשום שם לסוג'); return; }
 
-    /* stats */
-    let red = 0, orange = 0, green = 0;
-    docs.forEach(d => {
-      const cl = urgencyClass(daysUntil(d.date));
-      if (cl === 'red') red++;
-      else if (cl === 'orange') orange++;
-      else green++;
-    });
-    statsEl.innerHTML = `
-      <div class="stat-chip red">
-        <div class="num">${red}</div>
-        <div class="lbl">דחוף / פג</div>
-      </div>
-      <div class="stat-chip orange">
-        <div class="num">${orange}</div>
-        <div class="lbl">עומד לפוג</div>
-      </div>
-      <div class="stat-chip green">
-        <div class="num">${green}</div>
-        <div class="lbl">בסדר</div>
-      </div>`;
+            if (allTypes().some(t => t.name === name)) {
+                showToast('⚠️ סוג כזה כבר קיים');
+                return;
+            }
 
-    if (docs.length === 0) {
-      empty.style.display = 'block';
-      return;
-    }
-    empty.style.display = 'none';
+            const customTypes = loadCustomTypes();
+            customTypes.push({ name, icon });
+            saveCustomTypes(customTypes);
 
-    /* sort: soonest first */
-    const sorted = [...docs].sort((a, b) => new Date(a.date) - new Date(b.date));
+            document.getElementById('new-type-emoji').value = '';
+            document.getElementById('new-type-name').value = '';
 
-    sorted.forEach(doc => {
-      const days = daysUntil(doc.date);
-      const cls  = urgencyClass(days);
-      const card = document.createElement('div');
-      card.className = `doc-card ${cls}`;
-      card.innerHTML = `
-        <div class="icon">${TYPE_ICONS[doc.type] || '📄'}</div>
+            populateTypeSelects();
+            renderTypeChips();
+            showToast(`✅ הסוג "${name}" נוסף`);
+        }
+
+        /* ── Delete custom type ───────────────────────── */
+        function deleteCustomType(name) {
+            const customTypes = loadCustomTypes().filter(t => t.name !== name);
+            saveCustomTypes(customTypes);
+            populateTypeSelects();
+            renderTypeChips();
+            showToast(`🗑️ הסוג "${name}" נמחק`);
+        }
+
+        /* ── Toggle type panel ────────────────────────── */
+        function toggleTypePanel() {
+            const toggle = document.getElementById('type-toggle');
+            const panel = document.getElementById('type-panel');
+            toggle.classList.toggle('open');
+            panel.classList.toggle('open');
+        }
+
+        /* ── Render documents ─────────────────────────── */
+        function render() {
+            const docs = loadDocs();
+            const list = document.getElementById('doc-list');
+            const empty = document.getElementById('empty-state');
+            const countEl = document.getElementById('doc-count');
+            const statsEl = document.getElementById('stats-bar');
+
+            list.innerHTML = '';
+            countEl.textContent = `${docs.length} מסמכים`;
+
+            /* stats */
+            let red = 0, orange = 0, green = 0;
+            docs.forEach(d => {
+                const cl = urgencyClass(daysUntil(d.date));
+                if (cl === 'red') red++; else if (cl === 'orange') orange++; else green++;
+            });
+            statsEl.innerHTML = `
+      <div class="stat-chip red">   <div class="num">${red}</div>    <div class="lbl">דחוף / פג</div></div>
+      <div class="stat-chip orange"><div class="num">${orange}</div> <div class="lbl">עומד לפוג</div></div>
+      <div class="stat-chip green"> <div class="num">${green}</div>  <div class="lbl">בסדר</div></div>`;
+
+            if (docs.length === 0) { empty.style.display = 'block'; return; }
+            empty.style.display = 'none';
+
+            const sorted = [...docs].sort((a, b) => new Date(a.date) - new Date(b.date));
+            sorted.forEach(doc => {
+                const days = daysUntil(doc.date);
+                const cls = urgencyClass(days);
+                const card = document.createElement('div');
+                card.className = `doc-card ${cls}`;
+                card.innerHTML = `
+        <div class="icon">${iconFor(doc.type)}</div>
         <div class="doc-info">
-          <div class="name">${escHtml(doc.name)}</div>
+          <div class="name">${esc(doc.name)}</div>
           <div class="meta">
-            <span class="type-badge">${escHtml(doc.type)}</span>
+            <span class="type-badge">${esc(doc.type)}</span>
             <span class="date-str">פקיעה: ${formatDate(doc.date)}</span>
           </div>
         </div>
         <div class="urgency">${urgencyLabel(days)}</div>
-        <button class="btn-delete" title="מחק מסמך" onclick="deleteDoc('${doc.id}')">🗑️</button>`;
-      list.appendChild(card);
-    });
-  }
+        <div class="card-actions">
+          <button class="btn-icon edit" title="עריכה" onclick="openEdit('${doc.id}')">✏️</button>
+          <button class="btn-icon del"  title="מחיקה" onclick="deleteDoc('${doc.id}')">🗑️</button>
+        </div>`;
+                list.appendChild(card);
+            });
+        }
 
-  function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+        /* ── Add document ─────────────────────────────── */
+        function addDocument() {
+            const name = document.getElementById('doc-name').value.trim();
+            const type = document.getElementById('doc-type').value;
+            const date = document.getElementById('doc-date').value;
+            if (!name) { showToast('⚠️ נא להזין שם מסמך'); return; }
+            if (!date) { showToast('⚠️ נא לבחור תאריך פקיעה'); return; }
+            const docs = loadDocs();
+            docs.push({ id: crypto.randomUUID(), name, type, date });
+            saveDocs(docs);
+            showToast('✅ המסמך נוסף בהצלחה');
+            document.getElementById('doc-name').value = '';
+            document.getElementById('doc-date').value = '';
+            render();
+        }
 
-  /* ── Add ───────────────────────────────────────────── */
-  function addDocument() {
-    const name = document.getElementById('doc-name').value.trim();
-    const type = document.getElementById('doc-type').value;
-    const date = document.getElementById('doc-date').value;
+        /* ── Delete document ──────────────────────────── */
+        function deleteDoc(id) {
+            saveDocs(loadDocs().filter(d => d.id !== id));
+            showToast('🗑️ המסמך נמחק');
+            render();
+        }
 
-    if (!name) { showToast('⚠️ נא להזין שם מסמך'); return; }
-    if (!date) { showToast('⚠️ נא לבחור תאריך פקיעה'); return; }
+        /* ── Edit modal ───────────────────────────────── */
+        function openEdit(id) {
+            const doc = loadDocs().find(d => d.id === id);
+            if (!doc) return;
+            populateTypeSelects(doc.type);
+            document.getElementById('edit-id').value = doc.id;
+            document.getElementById('edit-name').value = doc.name;
+            document.getElementById('edit-date').value = doc.date;
+            document.getElementById('edit-modal').classList.add('open');
+        }
 
-    const docs = load();
-    docs.push({ id: crypto.randomUUID(), name, type, date });
-    save(docs);
-    showToast('✅ המסמך נוסף בהצלחה');
+        function closeModal() {
+            document.getElementById('edit-modal').classList.remove('open');
+        }
 
-    document.getElementById('doc-name').value = '';
-    document.getElementById('doc-date').value = '';
-    render();
-  }
+        function handleOverlayClick(e) {
+            if (e.target === document.getElementById('edit-modal')) closeModal();
+        }
 
-  /* ── Delete ────────────────────────────────────────── */
-  function deleteDoc(id) {
-    const docs = load().filter(d => d.id !== id);
-    save(docs);
-    showToast('🗑️ המסמך נמחק');
-    render();
-  }
+        function saveEdit() {
+            const id = document.getElementById('edit-id').value;
+            const name = document.getElementById('edit-name').value.trim();
+            const type = document.getElementById('edit-type').value;
+            const date = document.getElementById('edit-date').value;
+            if (!name) { showToast('⚠️ נא להזין שם מסמך'); return; }
+            if (!date) { showToast('⚠️ נא לבחור תאריך פקיעה'); return; }
 
-  /* ── Enter key shortcut ────────────────────────────── */
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && document.getElementById('doc-date').value) addDocument();
-  });
+            const docs = loadDocs().map(d => d.id === id ? { ...d, name, type, date } : d);
+            saveDocs(docs);
+            closeModal();
+            showToast('✅ המסמך עודכן');
+            render();
+        }
 
-  /* ── Init ──────────────────────────────────────────── */
-  render();
-</script>
+        /* ── Keyboard shortcuts ───────────────────────── */
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeModal();
+            if (e.key === 'Enter' && !document.getElementById('edit-modal').classList.contains('open')) {
+                if (document.getElementById('doc-date').value) addDocument();
+            }
+        });
+
+        /* ── Init ─────────────────────────────────────── */
+        populateTypeSelects();
+        renderTypeChips();
+        render();
+    </script>
 </body>
+
 </html>
