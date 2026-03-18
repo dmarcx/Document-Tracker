@@ -113,6 +113,35 @@
             letter-spacing: .5px;
         }
 
+        textarea {
+            width: 100%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'Heebo', sans-serif;
+            font-size: .95rem;
+            padding: 10px 13px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+            direction: rtl;
+            resize: vertical;
+            min-height: 72px;
+        }
+
+        textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, .2);
+        }
+
+        .doc-notes {
+            margin-top: 5px;
+            font-size: .8rem;
+            color: var(--muted);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
         input,
         select {
             width: 100%;
@@ -767,6 +796,10 @@
                 <input type="date" id="doc-date" />
             </div>
         </div>
+        <div style="margin-bottom:16px">
+            <label for="doc-notes">הערות</label>
+            <textarea id="doc-notes" placeholder="הערות חופשיות (אופציונלי)..." maxlength="500"></textarea>
+        </div>
         <button class="btn-primary" onclick="addDocument()">הוסף מסמך</button>
     </div>
 
@@ -828,6 +861,10 @@
             <div class="field">
                 <label for="edit-date">תאריך פקיעה</label>
                 <input type="date" id="edit-date" />
+            </div>
+            <div class="field">
+                <label for="edit-notes">הערות</label>
+                <textarea id="edit-notes" placeholder="הערות חופשיות (אופציונלי)..." maxlength="500"></textarea>
             </div>
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeModal()">ביטול</button>
@@ -1053,6 +1090,7 @@
             <span class="type-badge">${esc(doc.type)}</span>
             <span class="date-str">פקיעה: ${formatDate(doc.date)}</span>
           </div>
+          ${doc.notes ? `<div class="doc-notes">${esc(doc.notes)}</div>` : ''}
         </div>
         <div class="urgency">${urgencyLabel(days)}</div>
         <div class="card-actions">
@@ -1068,14 +1106,16 @@
             const name = document.getElementById('doc-name').value.trim();
             const type = document.getElementById('doc-type').value;
             const date = document.getElementById('doc-date').value;
+            const notes = document.getElementById('doc-notes').value.trim();
             if (!name) { showToast('⚠️ נא להזין שם מסמך'); return; }
             if (!date) { showToast('⚠️ נא לבחור תאריך פקיעה'); return; }
             const docs = loadDocs();
-            docs.push({ id: crypto.randomUUID(), name, type, date });
+            docs.push({ id: crypto.randomUUID(), name, type, date, notes });
             saveDocs(docs);
             showToast('✅ המסמך נוסף בהצלחה');
             document.getElementById('doc-name').value = '';
             document.getElementById('doc-date').value = '';
+            document.getElementById('doc-notes').value = '';
             render();
         }
 
@@ -1094,6 +1134,7 @@
             document.getElementById('edit-id').value = doc.id;
             document.getElementById('edit-name').value = doc.name;
             document.getElementById('edit-date').value = doc.date;
+            document.getElementById('edit-notes').value = doc.notes || '';
             document.getElementById('edit-modal').classList.add('open');
         }
 
@@ -1110,10 +1151,11 @@
             const name = document.getElementById('edit-name').value.trim();
             const type = document.getElementById('edit-type').value;
             const date = document.getElementById('edit-date').value;
+            const notes = document.getElementById('edit-notes').value.trim();
             if (!name) { showToast('⚠️ נא להזין שם מסמך'); return; }
             if (!date) { showToast('⚠️ נא לבחור תאריך פקיעה'); return; }
 
-            const docs = loadDocs().map(d => d.id === id ? { ...d, name, type, date } : d);
+            const docs = loadDocs().map(d => d.id === id ? { ...d, name, type, date, notes } : d);
             saveDocs(docs);
             closeModal();
             showToast('✅ המסמך עודכן');
