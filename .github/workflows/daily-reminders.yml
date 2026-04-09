@@ -1,0 +1,44 @@
+name: Daily Document Reminders
+
+on:
+  # Runs at 05:00 UTC = 08:00 Israel summer time (IDT, UTC+3)
+  # In winter (IST, UTC+2) this fires at 07:00 — close enough.
+  schedule:
+    - cron: '0 5 * * *'
+
+  # ← Allows you to trigger this manually from the GitHub Actions UI
+  #   (great for testing before waiting for the cron)
+  workflow_dispatch:
+
+jobs:
+  send-reminders:
+    name: Scan Firestore & send email reminders
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up Node.js 20 (LTS)
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: scripts/package-lock.json
+
+      # 3. Install dependencies from scripts/package.json
+      - name: Install dependencies
+        working-directory: scripts
+        run: npm ci
+
+      # 4. Run the reminder script
+      #    Secrets are injected as environment variables — nothing is hardcoded.
+      - name: Send reminders
+        working-directory: scripts
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+        run: node sendReminders.js
