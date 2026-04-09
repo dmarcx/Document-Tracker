@@ -75,19 +75,6 @@ python -m http.server 8000
 
 ---
 
-## 📁 מבנה הפרויקט
-
-```
-Document Tracker/
-├── index.html      # האפליקציה המלאה (HTML + CSS + JS + Firebase SDK)
-├── firebase.json   # הגדרות Firebase Hosting
-├── .firebaserc     # קישור לפרויקט document-tracker-95417
-├── CLAUDE.md       # הקשר פרויקט לסוכן AI
-└── README.md       # קובץ זה
-```
-
----
-
 ## 🏷️ סוגי מסמכים מובנים
 
 | סוג | Emoji |
@@ -112,6 +99,58 @@ Document Tracker/
 | אימות | Firebase Authentication (Google Sign-In) |
 | בסיס נתונים | Firebase Firestore (v9 Modular SDK) |
 | אירוח | Firebase Hosting |
+
+---
+
+## 📧 תזכורות אוטומטיות במייל
+
+תזכורות יומיות נשלחות דרך GitHub Actions (חינמי — ללא Firebase Blaze).
+
+### לוח זמנים לתזכורות
+| מצב | תזכורת |
+|-----|--------|
+| בדיוק 60 יום | פעם אחת |
+| 30–9 ימים | פעם בשבוע (30, 23, 16, 9) |
+| 0–7 ימים | כל יום |
+
+### הגדרה
+1. **Firebase Service Account** — Firebase Console → ⚙️ → Service Accounts → Generate new private key
+2. **Gmail App Password** — myaccount.google.com/apppasswords
+3. **GitHub Repository Secrets** (`Settings → Secrets → Actions`):
+
+| Secret | ערך |
+|--------|-----|
+| `FIREBASE_SERVICE_ACCOUNT` | תוכן ה-JSON המלא של ה-service account |
+| `EMAIL_USER` | כתובת Gmail של השולח |
+| `EMAIL_PASS` | Gmail App Password |
+
+4. הרץ ידנית מ-GitHub Actions UI לאימות (`workflow_dispatch`)
+
+### קבצים
+```
+.github/workflows/daily-reminders.yml   # הגדרת GitHub Actions (cron: 08:00 ישראל)
+scripts/sendReminders.js                 # לוגיקת הסריקה ושליחת המייל
+scripts/package.json                     # firebase-admin + nodemailer
+```
+
+---
+
+## 📁 מבנה הפרויקט
+
+```
+Document Tracker/
+├── index.html                    # האפליקציה המלאה (HTML + CSS + JS + Firebase SDK)
+├── firebase.json                 # הגדרות Firebase Hosting
+├── .firebaserc                   # קישור לפרויקט document-tracker-95417
+├── .github/
+│   └── workflows/
+│       └── daily-reminders.yml  # GitHub Actions cron לתזכורות מייל
+├── scripts/
+│   ├── sendReminders.js         # סקריפט תזכורות (Node.js)
+│   └── package.json             # תלויות: firebase-admin, nodemailer
+├── CLAUDE.md                    # הקשר פרויקט לסוכן AI
+└── README.md                    # קובץ זה
+```
 
 ---
 

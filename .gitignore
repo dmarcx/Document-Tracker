@@ -3,3 +3,6 @@ scripts/node_modules/
 
 # Firebase local cache
 .firebase/
+
+# Firebase service account keys (contain private credentials — never commit)
+*-firebase-adminsdk-*.json
