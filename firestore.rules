@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Each user can only read and write their own documents
+    match /users/{userId}/documents/{document} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // The collectionGroup('documents') query used for reminders script
+    // Note: Cloud Functions and Admin SDK (used in GitHub Actions) bypass these rules.
+    // These rules apply to the client-side (browser) access.
+    
+    // Rule for the collectionGroup query (if needed for client-side search)
+    match /{path=**}/documents/{document} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+  }
+}

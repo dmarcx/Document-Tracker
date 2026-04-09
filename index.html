@@ -254,7 +254,7 @@
         }
 
         .type-panel.open {
-            max-height: 300px;
+            max-height: 600px;
             opacity: 1;
         }
 
@@ -269,8 +269,32 @@
         .type-panel-inner h3 {
             font-size: .9rem;
             font-weight: 600;
-            margin-bottom: 14px;
+            margin: 18px 0 14px;
             color: var(--accent2);
+            border-top: 1px solid var(--border);
+            padding-top: 18px;
+        }
+
+        .type-panel-inner h3:first-child {
+            margin-top: 0;
+            border-top: none;
+            padding-top: 0;
+        }
+
+        .data-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .data-actions .btn-ghost {
+            flex: 1;
+            min-width: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
         .type-add-row {
@@ -1010,6 +1034,21 @@
                     <button class="btn-ghost" onclick="addCustomType()">הוסף</button>
                 </div>
                 <div class="type-chips" id="type-chips"></div>
+
+                <h3>💾 ניהול נתונים</h3>
+                <p style="font-size:0.8rem; color:var(--muted); margin-bottom:12px;">ייבוא מסמכים מהגרסה הישנה או גיבוי הנתונים שלך.</p>
+                <div class="data-actions">
+                    <button class="btn-ghost" onclick="importFromLocalStorage()">
+                        <span>📥</span> ייבוא מהדפדפן
+                    </button>
+                    <button class="btn-ghost" onclick="triggerJsonImport()">
+                        <span>📂</span> ייבוא מקובץ JSON
+                    </button>
+                    <button class="btn-ghost" onclick="exportDataToJson()">
+                        <span>📤</span> ייצוא לגיבוי
+                    </button>
+                </div>
+                <input type="file" id="json-import-file" style="display:none" accept=".json" onchange="handleJsonImport(event)" />
             </div>
         </div>
     </div>
@@ -1432,6 +1471,134 @@
             } catch {
                 showToast('❌ שגיאה בעדכון המסמך');
             }
+        };
+
+        /* ── Data Migration ───────────────────────────── */
+        window.importFromLocalStorage = async () => {
+            // Check for both common variations (case sensitive and insensitive)
+            const keysToTry = ['docs', 'DOCS', 'documentTracker_docs'];
+            let localDocs = null;
+            let foundKey = null;
+
+            for (const key of keysToTry) {
+                const raw = localStorage.getItem(key);
+                if (raw) {
+                    try {
+                        const parsed = JSON.parse(raw);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            localDocs = parsed;
+                            foundKey = key;
+                            break;
+                        }
+                    } catch (e) {
+                        console.warn(`Failed to parse localStorage key "${key}"`);
+                    }
+                }
+            }
+
+            const localTypes = JSON.parse(localStorage.getItem('customTypes') || localStorage.getItem('CUSTOM_TYPES') || 'null');
+
+            if (!localDocs) {
+                showToast('ℹ️ לא נמצאו נתונים מקומיים בכתובת דפדפן זו');
+                console.log('Available localStorage keys:', Object.keys(localStorage));
+                return;
+            }
+
+            if (!confirm(`נמצאו ${localDocs.length} מסמכים (במפתח "${foundKey}"). לייבא אותם לענן?`)) return;
+
+            await performImport(localDocs, localTypes);
+        };
+
+        window.triggerJsonImport = () => {
+            document.getElementById('json-import-file').click();
+        };
+
+        window.handleJsonImport = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    // Expected format: { docs: [], customTypes: [] } or just an array of docs
+                    const docsToImport = Array.isArray(data) ? data : (data.docs || []);
+                    const typesToImport = data.customTypes || [];
+
+                    if (docsToImport.length === 0) {
+                        showToast('❌ הקובץ אינו מכיל מסמכים תקינים');
+                        return;
+                    }
+
+                    if (!confirm(`האם לייבא ${docsToImport.length} מסמכים מהקובץ?`)) return;
+                    await performImport(docsToImport, typesToImport);
+                    e.target.value = ''; // Reset input
+                } catch (err) {
+                    showToast('❌ שגיאה בקריאת הקובץ: וודא שזהו קובץ JSON תקין');
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        async function performImport(docsToImport, typesToImport) {
+            if (!currentUser) {
+                showToast('⚠️ עליך להתחבר כדי לייבא נתונים');
+                return;
+            }
+
+            let successCount = 0;
+            showToast('🔄 מייבא נתונים...');
+
+            // 1. Import Types
+            if (typesToImport.length > 0) {
+                const mergedTypes = [...customTypes];
+                typesToImport.forEach(nt => {
+                    if (!mergedTypes.some(t => t.name === nt.name)) mergedTypes.push(nt);
+                });
+                await persistCustomTypes(mergedTypes);
+            }
+
+            // 2. Import Documents
+            const colRef = collection(db, 'users', currentUser.uid, 'documents');
+            for (const d of docsToImport) {
+                try {
+                    // Check for potential duplicate? (Skipping for now to be safe and simple)
+                    await addDoc(colRef, {
+                        name: d.name || 'ללא שם',
+                        type: d.type || 'אחר',
+                        date: d.date || new Date().toISOString().split('T')[0],
+                        notes: d.notes || ''
+                    });
+                    successCount++;
+                } catch (err) {
+                    console.error('Import error:', err);
+                }
+            }
+
+            showToast(`✅ ייבוא הושלם! ${successCount} מסמכים הועלו לענן`);
+
+            if (confirm('האם ברצונך למחוק את הנתונים הישנים מהדפדפן כעת?')) {
+                localStorage.removeItem('docs');
+                localStorage.removeItem('customTypes');
+            }
+        }
+
+        window.exportDataToJson = () => {
+            const data = {
+                docs: docs,
+                customTypes: customTypes,
+                exportDate: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `document-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('✅ הגיבוי הורד בהצלחה');
         };
 
         /* ── Keyboard shortcuts ───────────────────────── */
